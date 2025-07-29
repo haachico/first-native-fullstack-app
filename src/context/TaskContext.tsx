@@ -2,7 +2,7 @@
 //help me with setting the context
 
 import { task } from '@/types/tasks';
-import React, { createContext, useState, ReactNode, useContext } from 'react';
+import React, { createContext, useState, ReactNode, useContext, useEffect } from 'react';
 
 
 type TaskContextType = {
@@ -14,38 +14,147 @@ type TaskContextType = {
 };
 
 
+const API_URL = "http://192.168.0.103/todo-api/tasks";
+
 export const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
 export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [tasks, setTasks] = useState<task[]>([]);
+  
 
-  const addTask = (task: Omit<task, 'completed' | 'id'>) => {
+
+  const fetchTasks = async () => {
+    try {
+      const response = await fetch(`${API_URL}/read.php`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch tasks');
+      }
+
+      console.log('Tasks fetched:', response);
+      const data = await response.json();
+      setTasks(data);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    }
+  };
+  useEffect(() => {
+
+    fetchTasks();
+  }, []);
+
+  const addTask = async (task: Omit<task, 'completed' | 'id'>) => {
     const newTask: task = {
       ...task,
       completed: false,
       id: Date.now(), // Unique ID for the task
     };
-    setTasks((prevTasks) => [...prevTasks, newTask]);
+
+
+    try {
+      const response = await fetch(`${API_URL}/create.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newTask),
+      });
+
+
+      console.log('Task added:', response);
+      if (!response.ok) {
+        throw new Error('Failed to add task');
+      }
+
+      const addedTask = await response.json();
+
+      fetchTasks(); // Refresh the task list after adding a new task
+      console.log('Task added:', addedTask);
+      // setTasks((prevTasks) => [...prevTasks, newTask]);
+    } catch (error) {
+      console.error('Error adding task:', error);
+    }
+
+    
+
   };
 
-  const toggleTaskCompletion = (id: number) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
+  const toggleTaskCompletion = async (id: number) => {
+    // setTasks((prevTasks) =>
+    //   prevTasks.map((task) =>
+    //     task.id === id ? { ...task, completed: !task.completed } : task
+    //   )
+    // );
+
+    try {
+      const response = await fetch(`${API_URL}/complete.php`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({id}),
+      });
+
+      console.log('Task completion toggled:', response);
+      if (!response.ok) {
+        throw new Error('Failed to toggle task completion');
+      }
+
+      fetchTasks(); // Refresh the task list after toggling completion
+    } catch (error) {
+      console.error('Error toggling task completion:', error);
+    }
   };
 
-  const updateTask = (updatedTask: task) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === updatedTask.id ? updatedTask : task
-      )
-    );
+  const updateTask = async (updatedTask: task) => {
+    // setTasks((prevTasks) =>
+    //   prevTasks.map((task) =>
+    //     task.id === updatedTask.id ? updatedTask : task
+    //   )
+    // );
+
+    try {
+      const response = await fetch(`${API_URL}/update.php`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedTask),
+      });
+
+      console.log('Task updated:', response);
+      if (!response.ok) {
+        throw new Error('Failed to update task');
+      }
+
+      fetchTasks(); // Refresh the task list after updating a task
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
 };
 
-  const removeTask = (id: number) => {
-    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
+  const removeTask = async (id: number) => {
+    // setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
+
+    try {
+      const response = await fetch(`${API_URL}/delete.php`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
+
+      console.log('Task deleted:', response);
+      if (!response.ok) {
+        throw new Error('Failed to delete task');
+      }
+      
+
+      fetchTasks(); // Refresh the task list after deleting a task
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
+
   };
 
   return (

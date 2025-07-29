@@ -19,7 +19,7 @@ export default function TabOneScreen() {
 
   const [isEdit, setIsEdit] = useState(false);
 
-  const { tasks , removeTask} = useTask();
+  const { tasks , removeTask, toggleTaskCompletion} = useTask();
   const router = useRouter();
 
 
@@ -36,7 +36,6 @@ export default function TabOneScreen() {
   
 
   const handleDeleteTask = (taskId: number) => {
-    // Implement delete functionality
 
     removeTask(taskId);
   };
@@ -58,10 +57,22 @@ export default function TabOneScreen() {
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <TouchableOpacity
-              style={styles.taskCard}
+              style={[styles.taskCard, { backgroundColor: item.completed ? "#d4edda" : "#fff" }]}
               onPress={() => router.push(`/task/${item.id}`)}
             >
               <Text style={styles.taskTitle}>{item.title}</Text>
+                <TouchableOpacity
+                onPress={() => {
+                  toggleTaskCompletion(item.id);
+                }}
+                style={{ position: "absolute", right: 80, top: 10 }}
+                >
+                <Ionicons
+                  name={item.completed ? "checkmark-circle" : "ellipse-outline"}
+                  size={24}
+                  color={item.completed ? "#34C759" : "#C7C7CC"}
+                />
+                </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => handleEditTask(item.id)  }
                 style={{ position: "absolute", right: 50, top: 10 }}
