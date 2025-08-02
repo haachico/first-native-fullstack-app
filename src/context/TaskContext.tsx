@@ -10,16 +10,19 @@ type TaskContextType = {
   addTask: (task: Omit<task, 'completed' | 'id'>) => void;
   toggleTaskCompletion: (id: number) => void;
   updateTask: (task: task) => void; // Optional for future use
+  token?: string | null; // Optional for future use
+  setToken: (token: string | null) => void; // Optional for future use
     removeTask: (id: number) => void;
 };
 
 
-const API_URL = "http://192.168.0.103/todo-api/tasks";
+const API_URL = "http://192.168.0.105/todo-api/tasks";
 
 export const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
 export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [tasks, setTasks] = useState<task[]>([]);
+  const [token, setToken] = useState<string | null>(null); // Optional for future use
   
 
 
@@ -158,14 +161,14 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <TaskContext.Provider value={{ tasks, addTask, toggleTaskCompletion, removeTask , updateTask }}>
+    <TaskContext.Provider value={{ tasks, addTask, toggleTaskCompletion, token, setToken, removeTask , updateTask }}>
       {children}
     </TaskContext.Provider>
   );
 };
 
 export const useTask = () => {
-  const context = useContext(TaskContext);
+const context = useContext(TaskContext);
   if (!context) {
     throw new Error('useTask must be used within a TaskProvider');
   }

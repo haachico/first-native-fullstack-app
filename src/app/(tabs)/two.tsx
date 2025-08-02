@@ -1,14 +1,24 @@
-import { StyleSheet } from 'react-native';
+import { Button, StyleSheet } from 'react-native';
 
 // import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTask } from '@/context/TaskContext';
 
-export default function TabTwoScreen() {
+export default function ProfileScreen() {
+  const {setToken} = useTask();
+
+  const handleLogout = async ()=> {
+    await AsyncStorage.removeItem('token')
+    setToken(null)
+  }
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab Two</Text>
+      <Text style={styles.title}>Profile</Text>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
       {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
+
+      <Button title="logout" onPress={handleLogout} />
     </View>
   );
 }

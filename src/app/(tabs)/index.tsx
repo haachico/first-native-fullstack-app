@@ -58,7 +58,7 @@ export default function TabOneScreen() {
           renderItem={({ item }) => (
             <TouchableOpacity
               style={[styles.taskCard, { backgroundColor: item.completed ? "#d4edda" : "#fff" }]}
-              onPress={() => router.push(`/task/${item.id}`)}
+              onPress={() => router.push(`/ ${item.id}`)}
             >
               <Text style={styles.taskTitle}>{item.title}</Text>
                 <TouchableOpacity
