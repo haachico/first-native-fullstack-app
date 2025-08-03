@@ -119,6 +119,7 @@ useEffect(() => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({id}),
       });
@@ -146,6 +147,7 @@ useEffect(() => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(updatedTask),
       });
@@ -169,8 +171,10 @@ useEffect(() => {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ id }),
+    
       });
 
       console.log('Task deleted:', response);
