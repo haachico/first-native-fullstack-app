@@ -2,6 +2,7 @@
 //help me with setting the context
 
 import { task } from '@/types/tasks';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useState, ReactNode, useContext, useEffect } from 'react';
 
 
@@ -13,6 +14,7 @@ type TaskContextType = {
   token?: string | null; // Optional for future use
   setToken: (token: string | null) => void; // Optional for future use
     removeTask: (id: number) => void;
+  fetchTasks: () => void; // Optional for future use
 };
 
 
@@ -22,13 +24,35 @@ export const TaskContext = createContext<TaskContextType | undefined>(undefined)
 
 export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [tasks, setTasks] = useState<task[]>([]);
-  const [token, setToken] = useState<string | null>(null); // Optional for future use
+const [token, setToken] = useState<string | null>( null); // Optional for future use
+
+
+useEffect(() => {
+  if (token) {
+    fetchTasks();
+  }
+}, [token]);
+
+
+  //   useEffect(() => {
+  //   const fetchToken = async () => {
+  //     const storedToken = await AsyncStorage.getItem('token');
+  //     setToken(storedToken);
+  //   };
+  //   fetchToken();
+  // }, []);
   
 
 
   const fetchTasks = async () => {
+    console.log('Fetching tasks with token:', token);
     try {
-      const response = await fetch(`${API_URL}/read.php`);
+      const response = await fetch(`${API_URL}/read.php`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch tasks');
       }
@@ -46,6 +70,7 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const addTask = async (task: Omit<task, 'completed' | 'id'>) => {
+    console.log('Adding task with token:', token);
     const newTask: task = {
       ...task,
       completed: false,
@@ -58,6 +83,7 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(newTask),
       });
@@ -161,7 +187,7 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <TaskContext.Provider value={{ tasks, addTask, toggleTaskCompletion, token, setToken, removeTask , updateTask }}>
+    <TaskContext.Provider value={{ tasks, addTask, toggleTaskCompletion, token, setToken, removeTask , updateTask, fetchTasks }}>
       {children}
     </TaskContext.Provider>
   );
