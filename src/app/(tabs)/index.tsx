@@ -5,8 +5,8 @@ import { useTask } from "@/context/TaskContext";
 import TaskModal from "@/components/TaskModal";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker";
 // import { FlatList } from "react-native-reanimated/lib/typescript/Animated";
-
 
 export default function TabOneScreen() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -15,28 +15,23 @@ export default function TabOneScreen() {
     description: "",
     completed: false,
     id: 0,
-  })
-
+  });
+  const [selectedValue, setSelectedValue] = useState("option1");
   const [isEdit, setIsEdit] = useState(false);
 
-  const { tasks , removeTask, toggleTaskCompletion} = useTask();
+  const { tasks, fetchTasks, removeTask, toggleTaskCompletion } = useTask();
   const router = useRouter();
 
-
   const handleEditTask = (taskId: number) => {
-    setIsEdit(true)
+    setIsEdit(true);
     const task = tasks.find((t) => t.id === taskId);
     if (task) {
       setEditTask(task);
       setIsModalOpen(true);
     }
-
   };
 
-  
-
   const handleDeleteTask = (taskId: number) => {
-
     removeTask(taskId);
   };
 
@@ -51,35 +46,55 @@ export default function TabOneScreen() {
         <Text style={styles.addButtonText}>+ Add Task</Text>
       </TouchableOpacity>
 
+      {/* We will add filters now */}
+ <View style={{ marginBottom: 20, display: "flex", alignItems: "center" }}>
+      <Picker
+        selectedValue={selectedValue}
+        onValueChange={(itemValue) => {
+          setSelectedValue(itemValue);
+          fetchTasks(itemValue); // Fetch tasks based on selected filter
+        }}
+        style={{ height: 50, width: 200 }}
+      >
+        <Picker.Item label="All" value="all" />
+        <Picker.Item label="In Progress" value="inprogress" />
+        <Picker.Item label="Completed" value="completed" />
+      </Picker>
+
+     </View>
+
       <View style={styles.taskList}>
         <FlatList
           data={tasks}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <TouchableOpacity
-              style={[styles.taskCard, { backgroundColor: item.completed ? "#d4edda" : "#fff" }]}
+              style={[
+                styles.taskCard,
+                { backgroundColor: item.completed ? "#d4edda" : "#fff" },
+              ]}
               onPress={() => router.push(`/ ${item.id}`)}
             >
               <Text style={styles.taskTitle}>{item.title}</Text>
-                <TouchableOpacity
+              <TouchableOpacity
                 onPress={() => {
                   toggleTaskCompletion(item.id);
                 }}
                 style={{ position: "absolute", right: 80, top: 10 }}
-                >
+              >
                 <Ionicons
                   name={item.completed ? "checkmark-circle" : "ellipse-outline"}
                   size={24}
                   color={item.completed ? "#34C759" : "#C7C7CC"}
                 />
-                </TouchableOpacity>
+              </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => handleEditTask(item.id)  }
+                onPress={() => handleEditTask(item.id)}
                 style={{ position: "absolute", right: 50, top: 10 }}
               >
                 <Ionicons name="create-outline" size={24} color="#007AFF" />
               </TouchableOpacity>
-                 <TouchableOpacity
+              <TouchableOpacity
                 onPress={() => handleDeleteTask(item.id)}
                 style={{ position: "absolute", right: 10, top: 10 }}
               >
@@ -95,7 +110,14 @@ export default function TabOneScreen() {
         />
       </View>
 
-      {isModalOpen && <TaskModal onClose={() => setIsModalOpen(false)} editTask={editTask} isEdit={isEdit} setIsEdit={setIsEdit} />}
+      {isModalOpen && (
+        <TaskModal
+          onClose={() => setIsModalOpen(false)}
+          editTask={editTask}
+          isEdit={isEdit}
+          setIsEdit={setIsEdit}
+        />
+      )}
     </View>
   );
 }

@@ -3,6 +3,7 @@
 
 import { task } from '@/types/tasks';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
 import React, { createContext, useState, ReactNode, useContext, useEffect } from 'react';
 
 
@@ -28,46 +29,45 @@ const [token, setToken] = useState<string | null>( null); // Optional for future
 
 
 useEffect(() => {
-  if (token) {
-    fetchTasks();
-  }
+  const fetchTokenAndTasks = async () => {
+    const storedToken = await AsyncStorage.getItem('token');
+    // if (!storedToken) {
+    //   router.push('/login');
+    //   return;
+    // }
+    setToken(storedToken); 
+    await fetchTasks(); // pass token directly
+  };
+  fetchTokenAndTasks();
+}, []);
+
+
+useEffect(() => {
+  fetchTasks();
 }, [token]);
 
+const fetchTasks = async (itemvalue?: string) => {
+  // const effectiveToken = authToken ?? token;
+  // if (!effectiveToken) return;
 
-  //   useEffect(() => {
-  //   const fetchToken = async () => {
-  //     const storedToken = await AsyncStorage.getItem('token');
-  //     setToken(storedToken);
-  //   };
-  //   fetchToken();
-  // }, []);
-  
+  try {
+    const response = await fetch(`${API_URL}/read.php`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
 
-
-  const fetchTasks = async () => {
-    console.log('Fetching tasks with token:', token);
-    try {
-      const response = await fetch(`${API_URL}/read.php`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch tasks');
-      }
-
-      console.log('Tasks fetched:', response);
-      const data = await response.json();
-      setTasks(data);
-    } catch (error) {
-      console.error('Error fetching tasks:', error);
+    console.log('Fetch tasks response:', response);
+    if (response.status === 401) {
+      await AsyncStorage.removeItem('token');
+      router.push('/login');
+      return;
     }
-  };
-  useEffect(() => {
-
-    fetchTasks();
-  }, []);
+    const data = await response.json();
+    setTasks(data);
+  } catch (error) {
+    console.error('Error fetching tasks:', error);
+  }
+};
 
   const addTask = async (task: Omit<task, 'completed' | 'id'>) => {
     console.log('Adding task with token:', token);
