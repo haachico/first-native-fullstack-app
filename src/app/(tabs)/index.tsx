@@ -57,7 +57,7 @@ export default function TabOneScreen() {
         style={{ height: 50, width: 200 }}
       >
         <Picker.Item label="All" value="all" />
-        <Picker.Item label="In Progress" value="inprogress" />
+        <Picker.Item label="In Progress" value="pending" />
         <Picker.Item label="Completed" value="completed" />
       </Picker>
 

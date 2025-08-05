@@ -12,7 +12,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const {token, setToken} = useTask(); // Assuming you have a context to manage auth state
 
-  const { fetchTasks } = useTask(); // Function to fetch tasks after login
+  const { setuser } = useTask(); // Function to fetch tasks after login
   const handleSubmit = async () => {
 
    try {
@@ -29,10 +29,12 @@ const Login = () => {
       throw new Error('Login failed');
     }
     const data = await response.json();
+    
     console.log('Login response:', data);
 
    if(data.status === 'success') {
     console.log('Login successful:', data);
+    setuser(data.user.username); // Assuming the response contains user data
      AsyncStorage.setItem('token', data.token);
     setToken(data.token); // Assuming the response contains a token
     // Handle successful login, e.g., save token, redirect, etc.

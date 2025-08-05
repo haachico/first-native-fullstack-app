@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTask } from '@/context/TaskContext';
 
 export default function ProfileScreen() {
-  const {setToken} = useTask();
+  const {setToken, user} = useTask();
 
   const handleLogout = async ()=> {
     await AsyncStorage.removeItem('token')
@@ -17,6 +17,7 @@ export default function ProfileScreen() {
       <Text style={styles.title}>Profile</Text>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
       {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
+      <Text style={{fontSize: 20, marginBottom: 20}}>Welcome, {user}!</Text>
 
       <Button title="logout" onPress={handleLogout} />
     </View>
