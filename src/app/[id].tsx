@@ -2,21 +2,63 @@ import { router, Stack, useLocalSearchParams } from "expo-router";
 import { Text, View } from "@/components/Themed";
 import { StyleSheet, TouchableOpacity } from "react-native";
 import { useTask } from "@/context/TaskContext";
+import { useEffect, useState } from "react";
+import { task } from "@/types/tasks";
 
 const TaskDetailsPage = () => {
   const { id } = useLocalSearchParams();
-  const{ tasks } = useTask();
+  console.log("Task ID:", id);
+  const { token , checkTokenExpiry } = useTask();
+
+  const [task, setTask] = useState<task | null>(null);
+
+  // const task = tasks.find(task => task.id === Number(id));
+
+  const fetchTaskDetails = async (taskId: string) => {
+    try {
+      const response = await fetch(
+        `http://192.168.0.105/todo-api/tasks/details.php`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Ensure you have the token available
+          },
+          body: JSON.stringify({ id: taskId }), // Pass the task ID in the request body
+        }
+      );
+
+      if( checkTokenExpiry(response)) {
+        return; // Stop execution if token expired
+      }
 
 
-  const task = tasks.find(task => task.id === Number(id));
+      if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
 
-    if (!task) {
-        return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Task Not Found</Text>
-        </View>
-        );
+
+      const data = await response.json();
+
+      setTask(data);
+      console.log("Task details fetched successfully:", data);
+    } catch (error) {
+      console.error("Error fetching task details:", error);
     }
+  };
+  useEffect(() => {
+    if (id) {
+      fetchTaskDetails(id as string);
+    }
+  }, [id]);
+
+  if (!task) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Task Not Found</Text>
+      </View>
+    );
+  }
 
   const handleBack = () => {
     router.back();
@@ -35,7 +77,7 @@ const TaskDetailsPage = () => {
           <Text style={styles.title}>Task Details</Text>
           <Text style={styles.subtitle}>{task.title}</Text>
           <Text style={styles.description}>
-           {task.description || "No description provided."}
+            {task.description || "No description provided."}
           </Text>
         </View>
 

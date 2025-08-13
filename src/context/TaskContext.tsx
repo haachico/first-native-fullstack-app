@@ -22,9 +22,10 @@ type TaskContextType = {
   fetchTasks: (filter?: string) => void; // Optional for future use
   user: string | null; // Optional for future use
   setuser: (name: string | null) => void; // Optional for future use
+  checkTokenExpiry: (response: Response) => boolean; // Optional for future use
 };
 
-const API_URL = "http://192.168.0.105/todo-api/tasks";
+const API_URL = "http://192.168.0.104/todo-api/tasks";
 
 export const TaskContext = createContext<TaskContextType | undefined>(
   undefined
@@ -243,6 +244,7 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({
         updateTask,
         fetchTasks,
         user,
+        checkTokenExpiry,
         setuser,
       }}
     >

@@ -71,16 +71,19 @@ export default function TabOneScreen() {
             <TouchableOpacity
               style={[
                 styles.taskCard,
-                { backgroundColor: item.completed ? "#d4edda" : "#fff" },
+                { backgroundColor: item.completed ? "#c3e6cb" : "#fff" },
               ]}
-              onPress={() => router.push(`/ ${item.id}`)}
+              onPress={() => router.push(`/${item.id}` as any)}
             >
+              <View style={[styles.taskContent, { backgroundColor: item.completed ? "#c3e6cb" : "#fff" }]}>
               <Text style={styles.taskTitle}>{item.title}</Text>
+              </View>
+              <View style={[styles.taskActions, { backgroundColor: item.completed ? "#c3e6cb" : "#fff" }]}>
               <TouchableOpacity
                 onPress={() => {
                   toggleTaskCompletion(item.id);
                 }}
-                style={{ position: "absolute", right: 80, top: 10 }}
+                // style={{ position: "absolute", right: 80, top: 10 }}
               >
                 <Ionicons
                   name={item.completed ? "checkmark-circle" : "ellipse-outline"}
@@ -90,17 +93,19 @@ export default function TabOneScreen() {
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => handleEditTask(item.id)}
-                style={{ position: "absolute", right: 50, top: 10 }}
+                // style={{ position: "absolute", right: 50, top: 10 }}
               >
                 <Ionicons name="create-outline" size={24} color="#007AFF" />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => handleDeleteTask(item.id)}
-                style={{ position: "absolute", right: 10, top: 10 }}
+                // style={{ position: "absolute", right: 10, top: 10 }}
               >
                 <Ionicons name="trash-outline" size={24} color="#FF3B30" />
               </TouchableOpacity>
+              </View>
             </TouchableOpacity>
+            
           )}
           ListEmptyComponent={
             <Text style={styles.emptyText}>No tasks added yet.</Text>
@@ -160,7 +165,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   taskCard: {
-    backgroundColor: "#fff",
+    // backgroundColor: "#fff",
     padding: 16,
     borderRadius: 10,
     marginBottom: 12,
@@ -169,11 +174,25 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  taskContent : {
+    flex: 1,
+
+
+  },
+
+  taskActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
   },
   taskTitle: {
     fontSize: 16,
     fontWeight: "500",
     color: "#333",
+    flexWrap: "wrap",
   },
   emptyText: {
     fontSize: 16,
