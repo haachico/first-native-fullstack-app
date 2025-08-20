@@ -17,7 +17,7 @@ const Signup = () => {
 
   const handleSignup = async () => {
     try {
-      const response = await fetch('http://192.168.0.105/todo-api/users/register.php', {
+      const response = await fetch('http://th105/todo-api/users/register.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

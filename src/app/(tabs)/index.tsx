@@ -14,8 +14,10 @@ export default function TabOneScreen() {
     title: "",
     description: "",
     completed: false,
+    image: null,
     id: 0,
   });
+  
   const [selectedValue, setSelectedValue] = useState("option1");
   const [isEdit, setIsEdit] = useState(false);
 

@@ -11,11 +11,21 @@ import React, {
   useEffect,
 } from "react";
 
+type TaskFormData = {
+  title: string;
+  description: string;
+  image: {
+    uri: string;
+    name: string;
+    type: string;
+  };
+};
+
 type TaskContextType = {
   tasks: task[];
-  addTask: (task: Omit<task, "completed" | "id">) => void;
+  addTask: (formData: FormData) => void;
   toggleTaskCompletion: (id: number) => void;
-  updateTask: (task: task) => void; // Optional for future use
+  updateTask: (formData: FormData) => void; // Optional for future use
   token?: string | null; // Optional for future use
   setToken: (token: string | null) => void; // Optional for future use
   removeTask: (id: number) => void;
@@ -25,7 +35,8 @@ type TaskContextType = {
   checkTokenExpiry: (response: Response) => boolean; // Optional for future use
 };
 
-const API_URL = "http://192.168.0.104/todo-api/tasks";
+
+const API_URL = "http://192.168.0.105/todo-api/tasks";
 
 export const TaskContext = createContext<TaskContextType | undefined>(
   undefined
@@ -106,22 +117,18 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  const addTask = async (task: Omit<task, "completed" | "id">) => {
-    console.log("Adding task with token:", token);
-    const newTask: task = {
-      ...task,
-      completed: false,
-      id: Date.now(), // Unique ID for the task
-    };
+  const addTask = async (formData: TaskFormData) => {
+    console.log("Adding task with:", formData);
+  
 
     try {
       const response = await fetch(`${API_URL}/create.php`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          // "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(newTask),
+        body: formData as any,
       });
 
       if (checkTokenExpiry(response)) {
@@ -173,7 +180,7 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  const updateTask = async (updatedTask: task) => {
+  const updateTask = async (formData: FormData) => {
     // setTasks((prevTasks) =>
     //   prevTasks.map((task) =>
     //     task.id === updatedTask.id ? updatedTask : task
@@ -187,7 +194,7 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(updatedTask),
+        body: JSON.stringify(formData),
       });
 
       if (checkTokenExpiry(response)) {

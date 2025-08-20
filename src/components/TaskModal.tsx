@@ -3,6 +3,8 @@ import { Text, View } from "./Themed";
 import { useContext, useState } from "react";
 import { TaskContext, useTask } from "@/context/TaskContext";
 import { task } from "@/types/tasks";
+import * as ImagePicker from 'expo-image-picker';
+import { Image } from 'react-native';
 
 
 type TaskModalProps = {
@@ -18,6 +20,26 @@ const TaskModal: React.FC<TaskModalProps> = ({ onClose, editTask, isEdit, setIsE
     title: isEdit ? editTask.title : "",
     description: isEdit ? editTask.description : "",
   });
+const [image, setImage] = useState<string | null>(null);
+
+const pickImage = async () => {
+  // Ask for permission
+  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (status !== 'granted') {
+    alert('Permission to access media library is required!');
+    return;
+  }
+  // Launch image picker
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
+    quality: 1,
+  });
+
+  if (!result.canceled && result.assets && result.assets.length > 0) {
+    setImage(result.assets[0].uri);
+  }
+};
 
   const handleChange = (name: keyof task, value: string) => {
    
@@ -29,28 +51,45 @@ const TaskModal: React.FC<TaskModalProps> = ({ onClose, editTask, isEdit, setIsE
   };
 
 
-const handleSaveTask = () => {
+const handleSaveTask = async () => {
   if (task.title.trim() === "") {
     alert("Title is required");
     return;
   }
 
-  if (isEdit) {
-    const updatedTask: task = {
-      ...task,
-      id: editTask.id,
-      completed: editTask.completed
-    };
-    updateTask(updatedTask);
-  } else {
-    addTask(task);
+  const formData = new FormData();
+  formData.append('title', task.title);
+  formData.append('description', task.description);
+  if (image) {
+    const uriParts = image.split('.');
+    const fileType = uriParts[uriParts.length - 1];
+    formData.append('image', {
+      uri: image,
+      name: `image.${fileType}`,
+      type: `image/${fileType}`,
+    } as any);
   }
 
-  // Clean up once at the end
+  formData.append('completed', 'false'); // Assuming completed is false by default
+  formData.append('id', isEdit ? editTask.id.toString() : Date.now().toString()); // Use current timestamp as ID for new tasks
+
+  // console.log("Form Dataaaa:", JSON.stringify(formData));
+
+  if (isEdit) {
+    // Send formData to your backend for updating the task
+    // Example:
+    updateTask(formData);
+  } else {
+   addTask(formData);
+  }
+
   setIsEdit(false);
   setTask({ title: "", description: "" });
+  setImage(null);
   onClose();
 };
+
+
   return (
     <View style={styles.modalOverlay}>
       <View style={styles.modalContainer}>
@@ -66,7 +105,7 @@ const handleSaveTask = () => {
       <Text style={styles.label}>Add a description (optional)</Text>
 
       <TextInput
-        placeholder="Enter description ..."
+        placeholder="Enter description..."
         style={styles.textArea}
         value={ task.description}
         onChangeText={(value) => handleChange("description", value)}
@@ -84,6 +123,15 @@ const handleSaveTask = () => {
       </TouchableOpacity>
 
     </View>
+    <TouchableOpacity style={styles.button} onPress={pickImage}>
+  <Text style={styles.buttonLabel}>Pick an Image</Text>
+</TouchableOpacity>
+{image && (
+  <Image
+    source={{ uri: image }}
+    style={{ width: 100, height: 100, marginBottom: 10, borderRadius: 8 }}
+  />
+)}
     </View>
   );
 };
